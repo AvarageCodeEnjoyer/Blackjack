@@ -44,10 +44,12 @@ start.addEventListener("click", e => {
     if(parseInt(playerPoints.innerHTML) === 22){
       playerPoints.innerHTML - 10
     }
+    if(parseInt(playerPoints.innerHTML) === 21 && parseInt(dealerPoints.innerHTML) === 21){
+      console.log("Draw")
+    }
     if(parseInt(playerPoints.innerHTML) === 21){
       console.log("BLACKJACK!")
     }
-    // console.log(playerPoints.innerHTML)
   })
 })
 
@@ -60,13 +62,13 @@ hit.addEventListener("click", e => {
   fetch(drawCard(deckId, 1))
   .then(Response => Response.json())
   .then(data => {
-    console.log(data.cards[0])
+    // console.log(data.cards[0])
     playerHand.push(data.cards[0])
     addCards(data, playerCards, 0, playerPoints)
   })
-  if(parseInt(playerHand.innerHTML) === 21){
+  /* if(parseInt(playerHand.innerHTML) === 21){
     stand()
-  }
+  } */
 })
 
 /* ------ Event listener for "double" button to double bet and add card ----- */
@@ -77,7 +79,7 @@ hit.addEventListener("click", e => {
   fetch(drawCard(deckId))
   .then(Response => Response.json())
   .then(data => {
-    console.log(data)
+    // console.log(data)
   })
 }) */
 
@@ -85,20 +87,25 @@ hit.addEventListener("click", e => {
 /* ------------ Button for "stand", controls logic of win - loss ------------ */
 
 stand.addEventListener("click", e => {
-  e.preventDefault()
   if(!startChecked) return
+  e.preventDefault()
   if(parseInt(dealerPoints.innerHTML) <= 16){
-    dealerHand.push()
+    // dealerHand.push(card)
     dealerDraw()
   }
-  else{return}
 })
 
-/* -------------------------------- Functions ------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*                                  Functions                                 */
+/* -------------------------------------------------------------------------- */
+
+/* ------------- Draw any number of cards from deck with deckId ------------- */
 
 function drawCard(deckId, i){
   return `https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=${i}`
 }
+
+/* --------------- Add cards to playArea depending on the turn -------------- */
 
 function addCards(data, playArea, i, cardPoints){
   let createCard = document.createElement('img')
@@ -109,9 +116,11 @@ function addCards(data, playArea, i, cardPoints){
     cardPoints.style.color = "red"
     startChecked = false
     console.log("Bust")
-  }
-  
+  } 
 }
+
+
+/* ----------------- Add value of new cards to current total ---------------- */
 
 function addValue(value, currentValue){
   if(value === "ACE"){
@@ -120,8 +129,11 @@ function addValue(value, currentValue){
   }
   else if(value === "KING" || value === "QUEEN" || value === "JACK"){currentValue += 10}
   else{currentValue += parseInt(value)}
+  // console.log(parseInt(currentValue))
   return currentValue
 }
+
+/* ----------------------------- Reset all data ----------------------------- */
 
 function reset(){
   playerPoints.style.color = "black"
@@ -135,13 +147,22 @@ function reset(){
   console.clear()
 }
 
+/* -------------- Repeatably draw cards until dealer is over 16 ------------- */
+
 function dealerDraw(){
   fetch(drawCard(deckId, 1))
   .then(Response => Response.json())
   .then(data => {
     addCards(data, dealerCards, 0, dealerPoints)
-    if(parseInt(dealerPoints.innerHTML) >= parseInt(playerPoints.innerHTML) && parseInt(dealerPoints.innerHTML) <= 21){console.log("loss")}
-
+    if(parseInt(dealerPoints.innerHTML) <= 16){
+      setTimeout(() => {
+        dealerDraw()
+      }, 500);
+      return
+    }
+    else if(parseInt(dealerPoints.innerHTML) >= parseInt(playerPoints.innerHTML) && parseInt(dealerPoints.innerHTML) <= 21){
+      console.log("loss")
+    }
     else{console.log("win")}
   })
 }
