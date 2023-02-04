@@ -4,6 +4,9 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
 	<link href="./StyleSheet.css" rel="StyleSheet">
 	<script defer src = "./app.js"></script>
 	<title>Blackjack</title>
@@ -11,7 +14,7 @@
 <body>
 <div class="container">
   <div class="playArea">
-    <div class="value bet"></div>  
+    <div class="value result" id="dealerResult"></div>  
     <div class="hand" id="dealerCards"></div>
     <div class="value" id="dealerPoints"></div>
   </div>
@@ -24,7 +27,7 @@
   </div>
   
   <div class="playArea">
-    <div class="value"></div>
+    <div class="value result" id="playerResult"></div>
     <div class="hand" id="playerCards"></div>
     <div class="value" id="playerPoints"></div>  
   </div>
