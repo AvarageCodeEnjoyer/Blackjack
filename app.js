@@ -14,48 +14,73 @@ let dealerHand = []
 let playArea
 let deckId
 
-/* ------- Shuffle 6 decks of cards and set the "deckId" to that deck ------- */
-
-window.onload = () => {
-  fetch("https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=6")
-    .then(Response => Response.json())
-    .then(data => {
-      deckId = data.deck_id
-    })
-  }
-
-/* --------- Add event listener to start button to set initial state --------- */
-
-start.addEventListener("click", e => {
+let startClick = function(){
   reset()
-  let currentValue = 0;
   startChecked = true
-  fetch(drawCard(deckId, 4))
+  fetch(drawCard(deckId, 3))  
   .then(Response => Response.json())
   .then(data => {
+    let cardBack = document.createElement('img')
+    cardBack.src = "./BackOfCard.png"
+    dealerCards.appendChild(cardBack)
     for(i = 0; i <= 1; i++){
-      addCards(data, playerCards, i, playerPoints, playerResult, playerHand) 
-      playerHand.push(data.cards[i])
+      addCards(data, playerCards, i, playerPoints, playerResult, playerHand)
     }
-    for(i = 2; i <= 3; i++){
-      addCards(data, dealerCards, i, dealerPoints, dealerResult, dealerHand)
-      dealerHand.push(data.cards[i])
-    }
-    playerPoints.innerHTML = addValue(data.cards[0].value, currentValue, playerHand) + addValue(data.cards[1].value, currentValue, playerHand)
-    dealerPoints.innerHTML = addValue(data.cards[2].value, currentValue, dealerHand) + addValue(data.cards[3].value, currentValue, dealerHand)
-    if(parseInt(playerPoints.innerHTML) === 22){
-      playerPoints.innerHTML - 10
-    }
+    addCards(data, dealerCards, 2, dealerPoints, dealerResult, dealerHand)
     if(parseInt(playerPoints.innerHTML) === 21 && parseInt(dealerPoints.innerHTML) === 21){
+      startChecked = false
       playerResult.innerHTML = "Draw"
       dealerResult.innerHTML = "Draw"
     }
     else if(parseInt(playerPoints.innerHTML) === 21){
       playerResult.innerHTML = "BJACK!"
       playerResult.style.writingMode = "vertical-rl"
+      standClick()
     }
   })
-})
+}
+
+var standClick = function(){
+  if(!startChecked) return
+  fetch(drawCard(deckId, 1))
+  .then(Response => Response.json())
+  .then(data => {
+    dealerCards.firstChild.src = data.cards[0].image
+    dealerHand.unshift(data.cards[0])
+    dealerPoints.innerHTML = addValue(data.cards[0].value, parseInt(dealerPoints.innerHTML))
+  })
+
+  setTimeout( () => {
+    if(parseInt(dealerPoints.innerHTML) <= 16){
+      dealerDraw()
+    }
+    else if(parseInt(dealerPoints.innerHTML) === parseInt(playerPoints.innerHTML)){
+      playerResult.innerHTML = "Draw"
+      dealerResult.innerHTML = "Draw"
+    }
+    else{
+      // playerResult.innerHTML = "Win"
+      // dealerResult.innerHTML = "Loss"
+    }},750)
+    startChecked = false
+}
+
+
+
+/* ----- Shuffle 6 decks of cards and set the "deckId" to that decks ID ----- */
+
+window.onload = () => {
+  fetch("https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=6")
+  .then(Response => Response.json())
+  .then(data => {
+    deckId = data.deck_id
+    console.log(data)
+  })
+}
+
+/* --------- Add event listener to start button to set initial state --------- */
+
+start.addEventListener("click", startClick)
 
 
 /* ------- Event listener to "hit" button to add cards to playerHand ------- */
@@ -73,7 +98,7 @@ hit.addEventListener("click", e => {
 
 /* ------ Event listener for "double" button to double bet and add card ----- */
 
-// This doesn't do anything yet but i might add betting
+// This doesn't do anything yet but i might add betting in the future
  
 /* double.addEventListener("click", e => {
   if(!startChecked) return
@@ -86,22 +111,12 @@ hit.addEventListener("click", e => {
 }) */
 
 
-/* ------------ Button for "stand", controls logic of win - loss ------------ */
+/* ---------- Adds event listener to "stand" to activate standClick --------- */
 
-stand.addEventListener("click", e => {
-  if(!startChecked) return
-  e.preventDefault()
-  if(parseInt(dealerPoints.innerHTML) <= 16){
-    dealerDraw()
-  }
-  else{
-    playerResult.innerHTML = "Win"
-    dealerResult.innerHTML = "Loss"
-  }
-})
+stand.addEventListener("click", standClick)
 
 /* -------------------------------------------------------------------------- */
-/*                                  Functions                                 */
+/*                      V   V   V   Functions   V   V   V                     */
 /* -------------------------------------------------------------------------- */
 
 /* --------- Draw any number of cards with i, from deck with deckId --------- */
@@ -116,6 +131,7 @@ function addCards(data, playArea, i, cardPoints, result, hand){
   let createCard = document.createElement('img')
   createCard.src = data.cards[i].image
   playArea.appendChild(createCard)
+  hand.push(data.cards[i])
   cardPoints.innerHTML = addValue(data.cards[i].value, parseInt(cardPoints.innerHTML), hand)
   if(parseInt(cardPoints.innerHTML) > 21){
     cardPoints.style.color = "red"
@@ -129,12 +145,6 @@ function addCards(data, playArea, i, cardPoints, result, hand){
 
 function addValue(value, currentValue, aceCheck){
   if(value === "ACE"){
-    /* for(let i = 0; i <= ace.length; i++){
-      if(aceCheck[i].value === "ACE"){
-        
-        return
-      }
-    } */
     if(currentValue <= 10){currentValue += 11} 
     else{currentValue += 1}
   }
@@ -151,8 +161,8 @@ function reset(){
   dealerPoints.style.color = "black"
   playerResult.innerHTML = ""
   dealerResult.innerHTML = ""
-  playerPoints.innerHTML = ""
-  dealerPoints.innerHTML = ""
+  playerPoints.innerHTML = 0
+  dealerPoints.innerHTML = 0
   playerCards.innerHTML = ""
   dealerCards.innerHTML = ""
   playerHand.length = 0
@@ -169,18 +179,19 @@ function dealerDraw(){
     addCards(data, dealerCards, 0, dealerPoints, dealerResult, dealerHand)
     if(parseInt(dealerPoints.innerHTML) <= 16){
       setTimeout(() => {
-        dealerHand.push(data.cards[0])
         dealerDraw()
       }, 500);
-      return
+      
     }
-    else if(parseInt(dealerPoints.innerHTML) >= parseInt(playerPoints.innerHTML) && parseInt(dealerPoints.innerHTML) <= 21){
-      playerResult.innerHTML = "loss"
+    else if(parseInt(dealerPoints.innerHTML) === parseInt(playerPoints.innerHTML) && parseInt(dealerPoints.innerHTML) <= 21){
+      playerResult.innerHTML = "Draw"
+      dealerResult.innerHTML = "Draw"
+    }
+    else if(parseInt(dealerPoints.innerHTML) > parseInt(playerPoints.innerHTML)){
       dealerResult.innerHTML = "Win"
     }
-    else{
+    else if(parseInt(dealerPoints.innerHTML) < parseInt(playerPoints.innerHTML)){
       playerResult.innerHTML = "Win"
-      dealerResult.innerHTML = "Loss"
     }
   })
 }
