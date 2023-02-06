@@ -35,7 +35,12 @@ let startClick = function(){
     else if(parseInt(playerPoints.innerHTML) === 21){
       playerResult.innerHTML = "BJACK!"
       playerResult.style.writingMode = "vertical-rl"
-      standClick()
+      fetch(drawCard(deckId, 1))
+      .then(Response => Response.json())
+      .then(data => {
+        unHideCard(data)
+      })
+      // standClick()
     }
   })
 }
@@ -45,43 +50,31 @@ var standClick = function(){
   fetch(drawCard(deckId, 1))
   .then(Response => Response.json())
   .then(data => {
-    dealerCards.firstChild.src = data.cards[0].image
-    dealerHand.unshift(data.cards[0])
-    dealerPoints.innerHTML = addValue(data.cards[0].value, parseInt(dealerPoints.innerHTML))
+    unHideCard(data)
   })
 
   setTimeout( () => {
     if(parseInt(dealerPoints.innerHTML) <= 16){
       dealerDraw()
     }
-    else if(parseInt(dealerPoints.innerHTML) === parseInt(playerPoints.innerHTML)){
-      playerResult.innerHTML = "Draw"
-      dealerResult.innerHTML = "Draw"
-    }
     else{
-      // playerResult.innerHTML = "Win"
-      // dealerResult.innerHTML = "Loss"
-    }},750)
-    startChecked = false
+      winCondition()
+    }  
+  },750)
+  startChecked = false
 }
-
-
 
 /* ----- Shuffle 6 decks of cards and set the "deckId" to that decks ID ----- */
 
 window.onload = () => {
   fetch("https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=6")
   .then(Response => Response.json())
-  .then(data => {
-    deckId = data.deck_id
-    console.log(data)
-  })
+  .then(data => {deckId = data.deck_id})
 }
 
 /* --------- Add event listener to start button to set initial state --------- */
 
 start.addEventListener("click", startClick)
-
 
 /* ------- Event listener to "hit" button to add cards to playerHand ------- */
 
@@ -110,7 +103,6 @@ hit.addEventListener("click", e => {
   })
 }) */
 
-
 /* ---------- Adds event listener to "stand" to activate standClick --------- */
 
 stand.addEventListener("click", standClick)
@@ -123,6 +115,14 @@ stand.addEventListener("click", standClick)
 
 function drawCard(deckId, i){
   return `https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=${i}`
+}
+
+/* ------------------------ Unhide dealers first card ----------------------- */
+
+function unHideCard(data){
+  dealerCards.firstChild.src = data.cards[0].image
+  dealerHand.unshift(data.cards[0])
+  dealerPoints.innerHTML = addValue(data.cards[0].value, parseInt(dealerPoints.innerHTML))
 }
 
 /* --------------- Add cards to playArea depending on the turn -------------- */
@@ -143,7 +143,7 @@ function addCards(data, playArea, i, cardPoints, result, hand){
 
 /* ----------------- Add value of new cards to current total ---------------- */
 
-function addValue(value, currentValue, aceCheck){
+function addValue(value, currentValue, hand){
   if(value === "ACE"){
     if(currentValue <= 10){currentValue += 11} 
     else{currentValue += 1}
@@ -181,18 +181,27 @@ function dealerDraw(){
       setTimeout(() => {
         dealerDraw()
       }, 500);
-      
     }
-    else if(parseInt(dealerPoints.innerHTML) === parseInt(playerPoints.innerHTML) && parseInt(dealerPoints.innerHTML) <= 21){
-      playerResult.innerHTML = "Draw"
-      dealerResult.innerHTML = "Draw"
-    }
-    else if(parseInt(dealerPoints.innerHTML) > parseInt(playerPoints.innerHTML)){
-      dealerResult.innerHTML = "Win"
-    }
-    else if(parseInt(dealerPoints.innerHTML) < parseInt(playerPoints.innerHTML)){
-      playerResult.innerHTML = "Win"
+    else{
+      winCondition()
     }
   })
+}
+
+
+function winCondition(){
+  if(parseInt(dealerPoints.innerHTML) > 21){
+    dealerResult.innerHTML = "Bust"
+  }
+  else if(parseInt(dealerPoints.innerHTML) === parseInt(playerPoints.innerHTML)){
+    playerResult.innerHTML = "Draw"
+    dealerResult.innerHTML = "Draw"
+  }
+  else if(parseInt(dealerPoints.innerHTML) > parseInt(playerPoints.innerHTML)){
+    dealerResult.innerHTML = "Win"
+  }
+  else if(parseInt(dealerPoints.innerHTML) < parseInt(playerPoints.innerHTML)){
+    playerResult.innerHTML = "Win"
+  }
 }
 
