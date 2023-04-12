@@ -1,21 +1,33 @@
 const hit = document.getElementById('hit')
 const stand = document.getElementById('stand')
-const double = document.getElementById('double')
 const start = document.getElementById('start')
-const playerPoints = document.getElementById('playerPoints')
-const dealerPoints = document.getElementById('dealerPoints')
+const money = document.getElementById('money')
+const double = document.getElementById('double')
 const playerCards = document.getElementById('playerCards')
 const dealerCards = document.getElementById('dealerCards')
+const playerPoints = document.getElementById('playerPoints')
+const dealerPoints = document.getElementById('dealerPoints')
 const dealerResult = document.getElementById('dealerResult')
 const playerResult = document.getElementById('playerResult')
+
+const betAdd = document.getElementById('betAdd')
+const betAmount = document.getElementById('betAmount')
+let totalBet = 0
+
 let startChecked = false
 let playerHand = []
 let dealerHand = []
+let playerMoney = 1000
 let playArea
+let bet = 0
 let deckId
 
-let startClick = function(){
+let startClick = () => {
   reset()
+  if (totalBet == 0) {
+    alert("You need to make a bet")
+    return
+  }
   startChecked = true
   fetch(drawCard(deckId, 3))  
   .then(Response => Response.json())
@@ -27,26 +39,33 @@ let startClick = function(){
       addCards(data, playerCards, i, playerPoints, playerResult, playerHand)
     }
     addCards(data, dealerCards, 2, dealerPoints, dealerResult, dealerHand)
-    if(parseInt(playerPoints.innerHTML) === 21 && parseInt(dealerPoints.innerHTML) === 21){
+    /* if(parseInt(playerPoints.innerHTML) === 21 && parseInt(dealerPoints.innerHTML) === 21){
       startChecked = false
       playerResult.innerHTML = "Draw"
       dealerResult.innerHTML = "Draw"
-    }
-    else if(parseInt(playerPoints.innerHTML) === 21){
+    } */
+    if(parseInt(playerPoints.innerHTML) === 21){
       playerResult.innerHTML = "BJACK!"
       playerResult.style.writingMode = "vertical-rl"
       fetch(drawCard(deckId, 1))
       .then(Response => Response.json())
       .then(data => {
         unHideCard(data)
+        playerMoney += totalBet * 2.5
+        money.innerText = `$${playerMoney}`
+        betAmount.innerText = "$0000"
+        totalBet = 0
       })
-      // standClick()
     }
   })
 }
 
-var standClick = function(){
-  if(!startChecked) return
+var standClick = () => {
+  if (!startChecked) return
+  if (bet == 0) {
+    alert("You need to make a bet")
+    return
+  }
   fetch(drawCard(deckId, 1))
   .then(Response => Response.json())
   .then(data => {
@@ -58,7 +77,7 @@ var standClick = function(){
       dealerDraw()
     }
     else{
-      winCondition()
+      calculateBet()
     }  
   },750)
   startChecked = false
@@ -107,6 +126,10 @@ hit.addEventListener("click", e => {
 
 stand.addEventListener("click", standClick)
 
+/* ----------------- Add event listener to the "bet" button ----------------- */
+
+betAdd.addEventListener('click', addBet)
+
 /* -------------------------------------------------------------------------- */
 /*                      V   V   V   Functions   V   V   V                     */
 /* -------------------------------------------------------------------------- */
@@ -140,18 +163,54 @@ function addCards(data, playArea, i, cardPoints, result, hand){
   } 
 }
 
-
 /* ----------------- Add value of new cards to current total ---------------- */
 
 function addValue(value, currentValue, hand){
   if(value === "ACE"){
-    if(currentValue <= 10){currentValue += 11} 
-    else{currentValue += 1}
+    if(currentValue <= 10) currentValue += 11 
+    else if (hand[0].value === "ACE" || hand[1].value === "ACE" ) {
+      currentValue += 1
+    }
   }
   else if(value === "KING" || value === "QUEEN" || value === "JACK"){currentValue += 10}
   else{currentValue += parseInt(value)} 
   return currentValue
 }
+
+/* ----------------------- Add bet to the bet variable ---------------------- */
+
+function addBet() {
+  if (startChecked) return
+  const betInput = document.getElementById('betInput')
+  bet = parseInt(betInput.value)
+  if (playerMoney - betInput.value < 0) {
+    alert("You don't have the funds to bet that amount")
+    return
+  }  
+  console.log(bet)
+  playerMoney -= bet
+  totalBet += bet
+
+  betAmount.innerText = `$${totalBet}`
+  money.innerText = `$${playerMoney}`
+}
+
+/* ------------------- Calculate the money the player gets ------------------ */
+
+function calculateBet() {
+  if (winCondition()) {
+    playerMoney += totalBet * 2
+    money.innerText = `$${playerMoney}`
+  }
+  else if (!winCondition()) {
+    money.innerText = `$${playerMoney}`
+  }
+  else {
+    playerMoney += totalBet
+  }
+  betAmount.innerText = "$0000"
+  totalBet = 0
+} 
 
 /* ----------------------------- Reset all data ----------------------------- */
 
@@ -183,25 +242,30 @@ function dealerDraw(){
       }, 500);
     }
     else{
-      winCondition()
+      calculateBet()
     }
   })
 }
 
+/* -------------- Check for winner when no more cards are drawn ------------- */
 
 function winCondition(){
   if(parseInt(dealerPoints.innerHTML) > 21){
     dealerResult.innerHTML = "Bust"
+    return true
   }
   else if(parseInt(dealerPoints.innerHTML) === parseInt(playerPoints.innerHTML)){
     playerResult.innerHTML = "Draw"
     dealerResult.innerHTML = "Draw"
+    return "Draw"
   }
   else if(parseInt(dealerPoints.innerHTML) > parseInt(playerPoints.innerHTML)){
     dealerResult.innerHTML = "Win"
+    return false
   }
   else if(parseInt(dealerPoints.innerHTML) < parseInt(playerPoints.innerHTML)){
     playerResult.innerHTML = "Win"
+    return true
   }
 }
 
