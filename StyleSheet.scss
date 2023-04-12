@@ -1,20 +1,20 @@
-:root {
+:root{
   --table-color: #35654d;
   --btn-color: rgb(0,0,0);
   --hover-color: rgba(0, 0, 0, 0.7);
 }
 
-body {
+body{
   margin: 0px;
-  font-family: "Ubuntu", sans-serif;
+  font-family: 'Ubuntu', sans-serif;
 }
 
-.container img {
+.container img{
   width: 175px;
-  padding: 30px;
+  padding: 30px
 }
 
-.container {
+.container{
   display: flex;
   justify-content: center;
   align-items: center;
@@ -24,12 +24,12 @@ body {
   width: 100%;
 }
 
-.playArea {
+.playArea{
   display: flex;
   width: 100%;
 }
 
-.value {
+.value{
   font-size: 100px;
   text-align: center;
   display: flex;
@@ -38,17 +38,17 @@ body {
   flex: 1;
 }
 
-.hand {
+.hand{
   display: flex;
   justify-content: center;
   border: 5px solid black;
-  height: 300px;
+  height: 300px;  
   width: 65%;
   margin: 20px;
   border-radius: 10px;
 }
 
-.btnCon {
+.btnCon{
   display: grid;
   justify-content: space-between;
   align-items: center;
@@ -56,34 +56,32 @@ body {
   grid-template-rows: 1fr;
   width: 1000px;
   font-size: 25px;
-}
-.btnCon > div {
-  display: grid;
-  justify-items: space-between;
-  align-items: center;
-  justify-self: end;
-  grid-template-columns: repeat(4, auto);
-  width: 500px;
-}
-.btnCon > div #betAmount {
-  text-align: end;
-}
-.btnCon input {
-  height: 33px;
-  width: 120px;
-  border: 2px solid var(--btn-color);
-  border-radius: 10px;
-  text-align: center;
-  font-size: 30px;
-}
-.btnCon input::-moz-placeholder {
-  font-size: medium;
-}
-.btnCon input::placeholder {
-  font-size: medium;
+  > div {
+    display: grid;
+    justify-items: space-between;
+    align-items: center;
+    justify-self: end;
+    grid-template-columns: repeat(4, auto);
+    // justify-self: end;
+    width: 500px;
+    #betAmount {
+      text-align: end;
+    }
+  } 
+  input {
+    height: 33px;
+    width: 120px;
+    border: 2px solid var(--btn-color);
+    border-radius: 10px;
+    text-align: center;
+    font-size: 30px;
+    &::placeholder {
+      font-size: medium;
+    }
+  }
 }
 
-.btn {
+.btn{
   justify-self: space-around;
   font-size: 20px;
   background-color: var(--btn-color);
@@ -91,12 +89,12 @@ body {
   color: white;
   border-radius: 10px;
   padding: 5px;
-}
-.btn b {
-  justify-self: start;
+  b {
+    justify-self: start;
+  }
 }
 
-.btn:hover {
+.btn:hover{
   background-color: var(--hover-color);
   border: 2px solid var(--hover-color);
-}/*# sourceMappingURL=StyleSheet.css.map */
+}

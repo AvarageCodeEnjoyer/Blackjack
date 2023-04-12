@@ -1,17 +1,22 @@
 make a highlight when Blackjack
 
-get back of card png
+get back of card png * 
 
-make first dealers card hidden and add logic for unhiding card
-
-
+make first dealers card hidden and add logic for unhiding card *
 
 
-make "hit" button work
 
-make "stand" button work
+
+make "hit" button work *
+
+make "stand" button work *
 
 make "double" button work
+
+
+add betting system
+
+
 
 
 make playArea grow with card additions 
